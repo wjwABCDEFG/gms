@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.gms.user.dao.UserDao">
+    <select id="login" resultType="com.gms.commons.domain.User">
+        select u.user_id as user_id,ur.role_id as role_id,u.username as username,u.password as password,
+        u.realname as realname,r.name as rolename,u.email as email,u.phone as phone,u.status as status,u.credit as credit
+        from user u
+        inner join (user_role ur inner join role r on ur.role_id=r.role_id)
+        on username=#{username} and password=#{password} and u.status=1
+        where u.user_id = ur.user_id
+    </select>
+
+    <select id="getAllUserList" resultType="com.gms.commons.domain.User">
+        select u.user_id,ur.role_id,r.name as rolename,u.username,u.realname,u.email,u.phone,u.status,u.credit
+        from user u
+        inner join (user_role ur inner join role r on ur.role_id=r.role_id)
+        where u.user_id = ur.user_id
+    </select>
+
+    <select id="selectData" resultType="com.gms.commons.domain.User">
+        select u.user_id as user_id,ur.role_id as role_id,r.name as rolename,u.username as username,u.password as password,
+        u.realname as realname,u.email as email,u.phone as phone,u.status as status,u.credit as credit
+        from user u
+        inner join (user_role ur inner join role r on ur.role_id=r.role_id)
+        on u.user_id=#{user_id} and u.status=1
+        where u.user_id = ur.user_id
+    </select>
+
+
+    <update id="updateUserData">
+        update user set
+        username=#{username},realname=#{realname},password=#{password},email=#{email},phone=#{phone}
+        where user_id=#{user_id}
+    </update>
+
+    <update id="updateRole">
+        update user_role set
+        user_id=#{user_id},role_id=#{role_id}
+        where user_id=#{user_id}
+    </update>
+
+    <select id="selectRole" resultType="com.gms.commons.domain.User">
+        select ur.role_id,r.name as rolename,u.username,u.realname,u.email,u.phone
+        from user u
+        inner join (user_role ur inner join role r on ur.role_id=r.role_id)
+        where u.user_id = ur.user_id and r.role_id=#{role_id}
+    </select>
+
+    <insert id="register">
+        insert into user(username,realname,password,salt,email,phone,status,credit) values(#{username},#{realname},#{password},'1q',#{email},#{phone},1,1)
+    </insert>
+</mapper>

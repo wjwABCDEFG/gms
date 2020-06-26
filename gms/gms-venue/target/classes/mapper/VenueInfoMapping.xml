@@ -1,0 +1,272 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.gms.gmsvenue.dao.VenueManageDao">
+    <!--场地信息的实体类型-->
+    <resultMap id="VenueInfoMap" type="com.gms.commons.domain.VenueInfo">
+        <id column="id" property="id"></id>
+        <result column="cost" property="cost"></result>
+        <result column="period" property="period"></result>
+        <result column="status" property="status"></result>
+        <result column="class" property="venueClass"></result>
+        <result column="positions" property="position"></result>
+        <collection  property="venueCharge" ofType="com.gms.commons.domain.VenueCharge">
+            <result column="vid"  property="id"></result>
+            <result column="name"  property="name"></result>
+            <result column="unit"  property="unit"></result>
+            <result column="work_time"  property="workTime"></result>
+            <result column="phone_number"  property="phone"></result>
+        </collection>
+    </resultMap>
+
+    <!--  查询所有场地信息 vi.status==1 表示该场地信息为普通场地  -->
+    <select id="getAllVenueInfo" resultMap="VenueInfoMap">
+        select vi.id as id ,vi.cost as cost, pd.period as period,
+        ve.status_id as status, vc.class as class, vp.position as positions,
+        vcp.id as vid, vcp.name as name, vcp.unit as unit,
+        vcp.work_time as work_time,vcp.phone_number as phone_number
+        from venue_info vi, venue ve, venue_class vc, venue_charge_person vcp, venue_position vp, period pd
+        where vi.venue_id=ve.id and ve.class_id=vc.id and ve.charge_person_id=vcp.id
+        and ve.position_id=vp.id and vi.period_id=pd.id and vi.status_id=1 and ve.status_id =1;
+    </select>
+
+    <select id="getAllAppMissInfo" resultType="com.gms.commons.domain.appMissInfo">
+        select vai.app_record_code as code, vc.class as venueClass, vp.position as position, user.realname as username, user.user_id as userId,
+        pd.period as period, ca.contest_time as contestTIme, vai.id as id
+        from ctst_application ca, venue_app_info vai, venue_info vi, venue ve, venue_position vp, venue_class vc, user , period pd
+        where ca.app_record_id = vai.app_record_code and vai.venue_info_id = vi.id and user.user_id = ca.user_id
+        and vi.venue_id = ve.id and ve.class_id = vc.id and ve.position_id = vp.id and vi.period_id = pd.id
+        and vai.app_status_id = 3 and ca.app_status = 'ACCEPT_CONTEST' and NOT EXISTS (
+        select * from deal where deal.venue_app_id = vai.id)
+    </select>
+
+    <select id="getAllDealInfo" resultType="com.gms.commons.domain.appMissInfo">
+        select vai.app_record_code as code, vc.class as venueClass, vp.position as position, user.realname as username, user.user_id as userId,
+        pd.period as period, ca.contest_time as contestTIme, vai.id as id
+        from ctst_application ca, venue_app_info vai, venue_info vi, venue ve, venue_position vp, venue_class vc, user , period pd
+        where ca.app_record_id = vai.app_record_code and vai.venue_info_id = vi.id and user.user_id = ca.user_id
+        and vi.venue_id = ve.id and ve.class_id = vc.id and ve.position_id = vp.id and vi.period_id = pd.id
+        and vai.app_status_id = 3 and ca.app_status = 'ACCEPT_CONTEST' and EXISTS (
+        select * from deal where deal.venue_app_id = vai.id)
+    </select>
+
+    <!--  通过场地id查询场地信息  -->
+    <select id="getVenueInfoById" resultMap="VenueInfoMap">
+        select vi.id as id ,vi.cost as cost, pd.period as period,
+        ve.status_id as status, vc.class as class, vp.position as positions,
+        vcp.id as vid, vcp.name as name, vcp.unit as unit,
+        vcp.work_time as work_time,vcp.phone_number as phone_number
+        from venue_info vi, venue ve, venue_class vc, venue_charge_person vcp, venue_position vp, period pd
+        where vi.venue_id=ve.id and ve.class_id=vc.id and ve.charge_person_id=vcp.id
+        and ve.position_id=vp.id and vi.period_id=pd.id and vi.status_id=1 and ve.status_id =1 and vi.id = #{id};
+    </select>
+
+    <!--  查询所有特殊场地信息 -->
+    <select id="getAllSpecialVenueInfo" resultType="com.gms.commons.domain.specialVenueInfo">
+        select vai.id as id, vc.class as venueClass, vp.position as position, vai.week_id as weekId,
+        pd.period as period, ve.status_id as status, su.unit_name as useUnit
+        from venue_allocation_info vai, school_unit su, unit_class uc, venue_info vi, venue ve,
+        venue_class vc, venue_position vp, period pd
+        where vai.use_unit_id = su.id and vai.venue_info_id = vi.id and vi.venue_id = ve.id
+        and vi.period_id = pd.id and ve.position_id = vp.id  and su.unit_class_id = uc.id
+        and ve.class_id = vc.id and su.unit_class_id = #{unitClassId}
+    </select>
+
+
+    <!--  查询所有场地信息 vi.status==1 表示该场地信息为普通场地  -->
+    <select id="getAllVenueInfoByClassId" resultMap="VenueInfoMap">
+        select vi.id as id ,vi.cost as cost, pd.period as period,
+        ve.status_id as status, vc.class as class, vp.position as positions,
+        vcp.id as vid, vcp.name as name, vcp.unit as unit,
+        vcp.work_time as work_time,vcp.phone_number as phone_number
+        from venue_info vi, venue ve, venue_class vc, venue_charge_person vcp, venue_position vp, period pd
+        where vi.venue_id=ve.id and ve.class_id=vc.id and ve.charge_person_id=vcp.id
+        and ve.position_id=vp.id and vi.period_id=pd.id and vi.status_id=1 and ve.status_id != 9 and vc.id = #{classId};
+    </select>
+
+
+    <!--  查询场地  -->
+    <resultMap id="VenueMap" type="com.gms.commons.domain.Venue">
+        <id column="id" property="id"></id>
+        <result column="status" property="status"></result>
+        <result column="class" property="venueClass"></result>
+        <result column="position" property="position"></result>
+        <result column="positionId" property="positionId"></result>
+        <result column="classId" property="classId"></result>
+        <collection  property="venueCharge" ofType="com.gms.commons.domain.VenueCharge">
+            <result column="vid"  property="id"></result>
+            <result column="name"  property="name"></result>
+            <result column="unit"  property="unit"></result>
+            <result column="work_time"  property="workTime"></result>
+            <result column="phone_number"  property="phone"></result>
+        </collection>
+    </resultMap>
+
+    <!--  vi.status==1 表示该场地信息为普通场地  -->
+    <select id="getAllVenue" resultMap="VenueMap">
+        select ve.id as id, vc.class as class, vp.position as position, vc.id as classId, vp.id as positionId, vcp.id as vid,
+        vs.id as status, vcp.name as name, vcp.unit as unit, vcp.work_time as work_time, vcp.phone_number as phone_number
+        from venue ve, venue_position vp, venue_class vc, venue_charge_person vcp, venue_status vs
+        where ve.position_id=vp.id and ve.class_id=vc.id and ve.status_id=vs.id and ve.charge_person_id=vcp.id and vs.id!=9;
+    </select>
+
+
+    <!--  删除场地信息byid  -->
+    <update id="deleteVenueInfoById">
+        UPDATE venue_info SET status_id = 9 WHERE id = #{id}
+    </update>
+
+    <delete id="deleteSpecialVenueInfoById" >
+        delete from venue_allocation_info where id=#{id}
+    </delete>
+
+    <!--  检查申请信息是否冲突  -->
+    <select id="checkAppInfoIfconflicts" resultType="java.lang.Boolean">
+        SELECT EXISTS(select *
+        from venue_app_info vai, ctst_application ca
+        where vai.app_record_code = ca.app_record_id and vai.venue_info_id = #{venueInfoId}
+         and ca.contest_time = #{contestTime} and ca.app_status = 'ACCEPT_CONTEST'
+        )
+    </select>
+
+    <!--  检查是否为特殊场地  -->
+    <select id="checkAppInfoIfSpecial" resultType="java.lang.Boolean">
+        select exists(select *
+        from  week wk, venue_allocation_info va
+        where  va.venue_info_id = #{venueInfoId}
+        and va.week_id = wk.id and wk.class = #{week}
+        )
+    </select>
+
+    <!--  检查特殊场地添加是否冲突  -->
+    <select id="checkSpecialVenueAdd" resultType="java.lang.Boolean">
+        SELECT EXISTS(select *
+        from venue_allocation_info vai
+        where vai.venue_info_id = #{venueInfoId} and vai.week_id = #{weekId})
+    </select>
+
+
+    <!--  检查申请人密码是否正确  -->
+    <select id="checkAppPassword" resultType="java.lang.Boolean">
+        SELECT EXISTS(select *
+        from ctst_application ca, user
+        where ca.user_id=user.user_id and ca.app_record_id = #{code} and user.password = #{password})
+    </select>
+
+    <!--  删除场地byid  -->
+    <update id="deleteVenueById">
+        UPDATE venue SET status_id = 9 WHERE id = #{id}
+    </update>
+
+    <update id="updateAppinfoStatus">
+        UPDATE venue_app_info SET app_status_id = #{statusId} WHERE app_record_code = #{code}
+    </update>
+
+    <update id="updateVenue">
+        UPDATE venue
+        SET class_id = #{classId},position_id = #{positionId},charge_person_id = #{chargePersonId},status_id = #{statusId}
+        WHERE id = #{venueId}
+    </update>
+
+    <!--  查询所有的场地类别  -->
+    <select id="getAllVenueClass" resultType="com.gms.commons.domain.VenueClass">
+        select id as id, class as VenueClass from venue_class;
+    </select>
+
+    <!--  查询所有的学校单位  -->
+    <select id="getAllSchoolUnit" resultType="com.gms.commons.domain.SchoolUnit">
+        select su.id as id, unit_name as name, uc.class as unitClass
+        from school_unit su, unit_class uc
+        where su.unit_class_id = uc.id and su.unit_class_id = #{tabPosition};
+    </select>
+
+    <!-- 查询所有的场地位置-->
+    <select id="getAllVenuePosition" resultType="com.gms.commons.domain.VenuePosition">
+        select * from venue_position;
+    </select>
+
+    <!--  查询赛事申请信息ByCode  -->
+    <select id="getContestAppInfoByCode" resultType="com.gms.commons.domain.ContestAppInfo">
+        select ca.app_record_id as appRecordCode, ca.activity_type as activityType,
+        ca.contest_time as contestTimeStr, user.realname as userName, user.user_id as userId
+        from ctst_application ca, user
+        where ca.app_record_id = #{code} and ca.app_status = 'ACCEPT_CONTEST' and ca.user_id = user.user_id
+        and NOT EXISTS (SELECT * FROM venue_app_info WHERE APP_record_code=#{code});
+    </select>
+
+    <!--  查询场地申请信息  -->
+    <select id="getVenueAppByStatusId" resultType="com.gms.commons.domain.VenueApp">
+        select vai.app_record_code as code, vc.class as venueClass, vp.position as position, ca.contest_time as appTime,
+        pd.period as period, user.realname as username, vai.submit_time as submitTime, vai.app_status_id as status
+        from venue_app_info vai, ctst_application ca, user, period pd, venue_info vi, venue ve, venue_position vp, venue_class vc
+        where vai.app_record_code=ca.app_record_id and ca.user_id=user.user_id and vai.venue_info_id=vi.id and vi.venue_id=ve.id
+        and vi.period_id=pd.id and ve.position_id=vp.id and ve.class_id=vc.id and vai.app_status_id=#{statusId};
+    </select>
+
+    <!--  查询所有的场地负责人  -->
+    <select id="getAllVenueCharge" resultType="com.gms.commons.domain.VenueCharge">
+        select id, name, unit, work_time as workTime, phone_number as phone from venue_charge_person;
+    </select>
+
+    <!--  查询所有的时间段  -->
+    <select id="getAllVenuePeriod" resultType="com.gms.commons.domain.VenuePeriod">
+        select * from period;
+    </select>
+
+    <!--  新增场地  -->
+    <insert id="addVenue">
+        INSERT INTO venue
+        (class_id,position_id,charge_person_id,status_id)
+        VALUE
+        (#{classId},#{positionId},#{chargePersonId},#{statusId})
+    </insert>
+
+    <!--  新增处理信息  -->
+    <insert id="addDealInfo">
+        INSERT INTO deal
+        (venue_app_id,student_id,deal_class_id,deal_time)
+        VALUE
+        (#{venueAppId},#{userId},#{classId},#{dealTime})
+    </insert>
+
+    <select id="countVenueAppByStatusId" resultType="java.lang.Integer">
+        select count(*) from venue_app_info vai where vai.app_status_id=#{statusId};
+    </select>
+
+    <select id="countDealInfo" resultType="java.lang.Integer">
+        select count(*) from deal;
+    </select>
+
+    <!--  查询用户id  -->
+    <select id="getUserIdByName" resultType="java.lang.Integer">
+       	select user_id from user where user.username=#{username};
+    </select>
+
+    <!--  新增场地信息  -->
+    <insert id="addVenueInfo">
+        INSERT INTO venue_info
+        (period_id,cost,venue_id,status_id)
+        VALUE
+        (#{periodId},#{cost},#{venueId},#{statusId})
+    </insert>
+
+    <!--  新增特殊场地信息  -->
+    <insert id="addSpecialVenueInfo">
+        INSERT INTO venue_allocation_info
+        (use_unit_id,venue_info_id,week_id)
+        VALUE
+        (#{schoolUnitId},#{venueInfoId},#{weekId})
+    </insert>
+
+    <!--  新增场地申请信息  -->
+    <insert id="addVenueAppInfo">
+        INSERT INTO venue_app_info
+        (app_record_code, venue_info_id, reason, submit_time, app_status_id)
+        VALUE
+        (#{code},#{venueId},#{reason},#{submitTime}, #{statusId});
+    </insert>
+<!--    WHERE NOT EXISTS (SELECT * FROM venue_app_info WHERE APP_record_code=#{code})-->
+
+
+
+</mapper>

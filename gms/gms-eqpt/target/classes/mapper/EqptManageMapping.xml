@@ -1,0 +1,170 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.gms.gmseqpt.dao.EquipmentDao">
+
+    <!--器材映射实体-->
+    <resultMap id="equipment" type="com.gms.commons.domain.Equipment">
+            <id column="eqptid"  property="eqptID"></id>
+            <result column="eqptypeid"  property="eqptypeID"></result>
+            <result column="eqptname"  property="eqptName"></result>
+            <result column="rentalstatus"  property="rentalStatus"></result>
+            <result column="eqptstatus"  property="eqptStatus"></result>
+    </resultMap>
+
+    <!--器材租用映射实体-->
+    <resultMap id="eqptrent" type="com.gms.commons.domain.EqptRent">
+        <id column="OrderID"  property="OrderID"></id>
+        <result column="EqptName"  property="eqptName"></result>
+        <result column="StudentID"  property="studentID"></result>
+        <result column="Tenant"  property="Tenant"></result>
+        <result column="Telphone"  property="Telphone"></result>
+        <result column="Amount"  property="Amount"></result>
+        <result column="PayAmount"  property="payAmount"></result>
+        <result column="RentTime"  property="rentTime"></result>
+        <result column="ApprTime"  property="apprTime"></result>
+        <result column="VerifyState"  property="verifyState"></result>
+    </resultMap>
+
+    <select id="getEquipment" resultMap="equipment">
+        select eqptID,eqptName,rentalStatus,eqptStatus from equipment
+    </select>
+
+    <select id="queryEqpt" resultType="com.gms.commons.domain.Equipment">
+        select eqptID,eqptName,rentalStatus,eqptStatus
+        from equipment
+        where eqptID=#{eqptID}
+    </select>
+
+    <insert id="addEqpt" parameterType="com.gms.commons.domain.Equipment">
+        INSERT INTO equipment (EqptID,EqptName, EqptStatus, RentalStatus)
+        VALUES (#{eqptID}, #{eqptName}, #{eqptStatus},#{rentalStatus} );
+    </insert>
+
+    <update id="repairEqpt" parameterType="com.gms.commons.domain.Equipment">
+        update equipment set EqptStatus = "保修"
+        where eqptID = #{eqptID};
+   </update>
+
+    <delete id="deleteEqpt" parameterType="com.gms.commons.domain.Equipment">
+        DELETE FROM equipment WHERE EqptID = #{eqptID};
+    </delete>
+
+    <select id="queryType" resultType="com.gms.commons.domain.EqptType">
+        select a.typename as eqptName,unitPrice
+        ,(select count(1) from equipment where a.typename=eqptname) as totalQty
+        from eqpttype as a
+    </select>
+
+    <insert id="addType" parameterType="com.gms.commons.domain.EqptType">
+        INSERT INTO eqpttype (TypeName,UnitPrice)
+        VALUES (#{eqptName}, #{unitPrice});
+    </insert>
+
+    <update id="chargePrice" parameterType="com.gms.commons.domain.EqptType">
+        update eqpttype set UnitPrice = #{unitPrice}
+        where typename=#{eqptName};
+   </update>
+
+    <select id="getPrice" resultType="Integer">
+        select unitPrice
+        from eqpttype
+        where typeName=#{eqptName}
+    </select>
+
+    <insert id="eqptApp" parameterType="com.gms.commons.domain.EqptRent">
+        INSERT INTO eqptrent (eqptName, Amount, studentID, Tenant, Telphone, PayAmount, verifyState, rentTime)
+        VALUES (#{eqptName}, #{amount}, #{studentID}, #{tenant}, #{telphone}, #{payAmount}, #{verifyState}, #{rentTime});
+    </insert>
+
+    <select id="getRentList" resultType="com.gms.commons.domain.EqptRent">
+        select OrderID,EqptName,StudentID,Tenant,Telphone,Amount,PayAmount,RentTime,VerifyState
+        from eqptrent
+    </select>
+
+    <select id="getChoseEqptList" resultType="com.gms.commons.domain.Equipment">
+        select eqptID,eqptName,rentalStatus,eqptStatus
+        from equipment
+        where eqptName=#{eqptName} and rentalStatus="未出租"
+    </select>
+
+    <update id="rejectRent" parameterType="com.gms.commons.domain.EqptRent">
+        UPDATE eqptrent SET ApprTime = #{apprTime}, VerifyState = "驳回"
+        WHERE OrderID = #{orderID};
+    </update>
+
+    <update id="agreeRent" parameterType="com.gms.commons.domain.Equipment">
+        UPDATE equipment SET RentalStatus="已出租"
+        where eqptID in(
+        <foreach collection="array" item="eqptID" index="index" separator="," >
+        #{eqptID}
+        </foreach>)
+    </update>
+
+    <update id="agreeVerify" parameterType="com.gms.commons.domain.EqptRent">
+        UPDATE eqptrent SET ApprTime = #{apprTime}, VerifyState = "通过"
+        WHERE OrderID = #{orderID};
+    </update>
+
+    <select id="searchRent" resultMap="equipment">
+        select eqptID,eqptName,eqptStatus,rentalStatus
+        from equipment
+        where rentalStatus="已出租"
+    </select>
+
+    <update id="recyclingEqpt" parameterType="com.gms.commons.domain.Equipment">
+        update equipment set rentalStatus = "未出租"
+        where eqptID = #{eqptID};
+   </update>
+
+    <select id="queryByType" resultType="com.gms.commons.domain.Equipment">
+        select eqptID,eqptName,rentalStatus,eqptStatus
+        from equipment
+        where eqptName=#{eqptName} and rentalStatus="已出租"
+    </select>
+
+    <select id="queryByID" resultType="com.gms.commons.domain.Equipment">
+        select eqptID,eqptName,rentalStatus,eqptStatus
+        from equipment
+        where eqptID=#{eqptID} and rentalStatus="已出租"
+    </select>
+
+    <update id="eqptDamage" parameterType="com.gms.commons.domain.Equipment">
+        update equipment set eqptStatus = "损坏",rentalStatus = "未出租"
+        where eqptID = #{eqptID};
+   </update>
+
+    <select id="getChargStandard" resultType="com.gms.commons.domain.EqptType">
+        select a.typename as eqptName,unitPrice
+        ,(select count(1) from equipment where a.typename=eqptname) as totalQty
+        from eqpttype as a
+        where a.typename = #{eqptName}
+    </select>
+
+    <select id="getOptions" resultType="com.gms.commons.domain.Equipment">
+        select eqptID
+        from equipment
+        where eqptStatus = "损坏"
+    </select>
+
+    <select id="getCompensationeList" resultType="com.gms.commons.domain.EqptCompensation">
+        select * from eqptcompensation
+    </select>
+
+    <insert id="addCompensation" parameterType="com.gms.commons.domain.EqptCompensation">
+        INSERT INTO eqptcompensation (EqptID, StudentID, CpstStatus, Indemnity,SubmissionTime)
+        VALUES (#{eqptID}, #{studentID}, #{cpstStatus}, #{indemnity}, #{submissionTime});
+    </insert>
+
+
+    <update id="finishCompensation" parameterType="com.gms.commons.domain.EqptCompensation">
+        UPDATE eqptcompensation SET CpstStatus = "已处理"
+        WHERE CompensateID = #{compensateID};
+    </update>
+
+    <select id="orederQuery" resultType="com.gms.commons.domain.EqptRent">
+        select * from eqptrent
+        where telphone = #{telphone}
+    </select>
+</mapper>

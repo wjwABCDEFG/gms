@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="CompilerConfiguration">
+    <annotationProcessing>
+      <profile name="Maven default annotation processors profile" enabled="true">
+        <sourceOutputDir name="target/generated-sources/annotations" />
+        <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
+        <outputRelativeToContentRoot value="true" />
+        <module name="gms-eqpt" />
+        <module name="gms-venue" />
+        <module name="gms-commons" />
+        <module name="gms-contest" />
+        <module name="gms-user" />
+      </profile>
+    </annotationProcessing>
+  </component>
+  <component name="JavacSettings">
+    <option name="ADDITIONAL_OPTIONS_OVERRIDE">
+      <module name="gms" options="-parameters" />
+      <module name="gms-commons" options="-parameters" />
+      <module name="gms-contest" options="-parameters" />
+      <module name="gms-eqpt" options="-parameters" />
+      <module name="gms-user" options="-parameters" />
+      <module name="gms-venue" options="-parameters" />
+    </option>
+  </component>
+</project>

@@ -1,0 +1,21 @@
+server:
+  port: 9001
+spring:
+  application:
+    name: gms-contest
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://39.106.175.70/gms
+    username: root
+    password: 0751@@@wjw
+    hikari:
+      connection-timeout: 30000
+      minimum-idle: 3
+      maximum-pool-size: 10
+      max-lifetime: 30000
+      connection-test-query: SELECT 1
+mybatis:
+  type-aliases-package: com.gms.contest.pojo
+#logging:
+#  level:
+#    com.gms.contest: debug
